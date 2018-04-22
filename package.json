@@ -14,20 +14,23 @@
     "url": "https://github.com/overlookmotel/yauzl-clone/issues"
   },
   "dependencies": {
+    "events-intercept": "^2.0.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
     "cross-env": "^5.1.4",
+    "fd-slicer": "^1.0.1",
     "istanbul": "^0.4.5",
     "jshint": "^2.9.5",
-    "mocha": "^5.1.0"
+    "mocha": "^5.1.0",
+    "yauzl": "^2.9.1"
   },
   "keywords": [
     "yauzl",
-	"clone",
-	"patch",
-	"plugin"
+    "clone",
+    "patch",
+    "plugin"
   ],
   "scripts": {
     "test": "npm run jshint && npm run test-main",
