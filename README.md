@@ -15,6 +15,8 @@
 
 This module does not have any useful function in itself. It is purely designed to help with creating modules that modify [yauzl](https://www.npmjs.com/package/yauzl) unzipping library in some way.
 
+[yauzl-promise](https://www.npmjs.com/package/yauzl-promise) and [yauzl-crc](https://www.npmjs.com/package/yauzl-crc), for example, uses this module internally.
+
 When monkey-patching a module, it is good practice to clone the original module first so as not to alter the result of calling `require('yauzl')` somewhere else in your application (perhaps inside a dependency).
 
 This module provides some helper methods for creating cloned versions of [yauzl](https://www.npmjs.com/package/yauzl) for later modification.
