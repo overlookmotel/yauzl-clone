@@ -21,7 +21,7 @@ This module provides some helper methods for creating cloned versions of [yauzl]
 
 ## Usage
 
-### `.clone( yauzl [, options ])`
+### `.clone( yauzl [, options ] )`
 
 Options are as follows (defaults shown):
 

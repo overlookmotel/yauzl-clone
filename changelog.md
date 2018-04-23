@@ -7,3 +7,4 @@
 ## Next
 
 * Fix: `.patch` method maintain `this` context in method calls
+* README typo
