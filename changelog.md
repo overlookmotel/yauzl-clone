@@ -4,7 +4,7 @@
 
 * Initial release
 
-## Next
+## 1.0.1
 
 * Fix: `.patch` method maintain `this` context in method calls
 * README update

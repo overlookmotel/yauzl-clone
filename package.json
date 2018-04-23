@@ -1,6 +1,6 @@
 {
   "name": "yauzl-clone",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Clone yauzl for patching",
   "main": "./lib/",
   "author": {
