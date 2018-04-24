@@ -9,3 +9,7 @@
 * Fix: `.patch` method maintain `this` context in method calls
 * README update
 * README typo
+
+# Next
+
+* Remove unnecessary instanceof checks in patchers
