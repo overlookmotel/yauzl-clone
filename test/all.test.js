@@ -24,6 +24,7 @@ chai.config.includeStack = true;
 /* global describe, it, beforeEach */
 
 const PATH = pathJoin(__dirname, 'test.zip'),
+	ENTRY_COUNT = 4,
 	FILE_LENGTH = 648;
 
 describe('.clone()', function() {
@@ -87,6 +88,36 @@ describe('.clone()', function() {
 
 			it('`.fromRandomAccessReader()`', function(cb) {
 				testFromRandomAccessReader(this.yauzl, cb, this.testFn);
+			});
+		});
+
+		describe('ZipFile subclass instance emits entry events with lazyEntries option false', function() {
+			// Tests for issue https://github.com/overlookmotel/yauzl-clone/issues/1
+			beforeEach(function() {
+				this.testFn = (zipFile, cb) => {
+					let entries = 0;
+					zipFile.on('entry', () => entries++);
+					zipFile.on('end', () => {
+						expect(entries).to.equal(ENTRY_COUNT);
+						cb();
+					});
+				};
+			});
+
+			it('`.open()`', function(cb) {
+				testOpen(this.yauzl, cb, this.testFn, true);
+			});
+
+			it('`.fromFd()`', function(cb) {
+				testFromFd(this.yauzl, cb, this.testFn, true);
+			});
+
+			it('`.fromBuffer()`', function(cb) {
+				testFromBuffer(this.yauzl, cb, this.testFn, true);
+			});
+
+			it('`.fromRandomAccessReader()`', function(cb) {
+				testFromRandomAccessReader(this.yauzl, cb, this.testFn, true);
 			});
 		});
 	});
@@ -318,9 +349,9 @@ describe('.patchAll()', function() {
 /*
  * Helper functions
  */
-function testOpen(yauzl, cb, fn) {
+function testOpen(yauzl, cb, fn, noLazyEntries) {
 	fn = errorToCb(fn);
-	yauzl.open(PATH, {lazyEntries: true}, function(err, zipFile) {
+	yauzl.open(PATH, {lazyEntries: !noLazyEntries}, function(err, zipFile) {
 		if (err) return cb(err);
 		fn(zipFile, err => {
 			if (err) return cb(err);
@@ -329,12 +360,12 @@ function testOpen(yauzl, cb, fn) {
 	});
 }
 
-function testFromFd(yauzl, cb, fn) {
+function testFromFd(yauzl, cb, fn, noLazyEntries) {
 	fn = errorToCb(fn);
 	fs.open(PATH, 'r', (err, fd) => {
 		if (err) return cb(err);
 
-		yauzl.fromFd(fd, {lazyEntries: true}, function(err, zipFile) {
+		yauzl.fromFd(fd, {lazyEntries: !noLazyEntries}, function(err, zipFile) {
 			if (err) return cb(err);
 			fn(zipFile, err => {
 				if (err) return cb(err);
@@ -344,26 +375,26 @@ function testFromFd(yauzl, cb, fn) {
 	});
 }
 
-function testFromBuffer(yauzl, cb, fn) {
+function testFromBuffer(yauzl, cb, fn, noLazyEntries) {
 	fn = errorToCb(fn);
 	fs.readFile(PATH, (err, buffer) => {
 		if (err) return cb(err);
 
-		yauzl.fromBuffer(buffer, {lazyEntries: true}, function(err, zipFile) {
+		yauzl.fromBuffer(buffer, {lazyEntries: !noLazyEntries}, function(err, zipFile) {
 			if (err) return cb(err);
 			fn(zipFile, cb);
 		});
 	});
 }
 
-function testFromRandomAccessReader(yauzl, cb, fn) {
+function testFromRandomAccessReader(yauzl, cb, fn, noLazyEntries) {
 	fn = errorToCb(fn);
 	fs.readFile(PATH, (err, buffer) => {
 		if (err) return cb(err);
 
 		const reader = fdSlicer.createFromBuffer(buffer);
 
-		yauzl.fromRandomAccessReader(reader, buffer.length, {lazyEntries: true}, function(err, zipFile) {
+		yauzl.fromRandomAccessReader(reader, buffer.length, {lazyEntries: !noLazyEntries}, function(err, zipFile) {
 			if (err) return cb(err);
 			fn(zipFile, cb);
 		});
