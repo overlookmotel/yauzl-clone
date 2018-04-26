@@ -17,5 +17,6 @@
 
 ## Next
 
+* `.clone()` with `subclassZipFile` option forward all events to subclass instance
 * Fix: README typo
 * README formatting
