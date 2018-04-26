@@ -18,3 +18,4 @@
 ## Next
 
 * Fix: README typo
+* README formatting

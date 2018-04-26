@@ -29,10 +29,10 @@ Options are as follows (defaults shown):
 
 ```js
 {
-	clone: true,
-	subclassZipFile: false,
-	subclassEntry: false,
-	eventsIntercept: false
+  clone: true,
+  subclassZipFile: false,
+  subclassEntry: false,
+  eventsIntercept: false
 }
 ```
 
