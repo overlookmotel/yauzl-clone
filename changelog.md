@@ -10,7 +10,7 @@
 * README update
 * README typo
 
-# Next
+## 1.0.2
 
 * Fix: `.clone()` with `subclassZipFile` option breaks `lazyEntries: false` (closes #1)
 * Remove unnecessary instanceof checks in patchers
@@ -18,5 +18,6 @@
 ## Next
 
 * `.clone()` with `subclassZipFile` option forward all events to subclass instance
+* Fix: Changelog
 * Fix: README typo
 * README formatting
