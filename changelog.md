@@ -14,3 +14,7 @@
 
 * Fix: `.clone()` with `subclassZipFile` option breaks `lazyEntries: false` (closes #1)
 * Remove unnecessary instanceof checks in patchers
+
+## Next
+
+* Fix: README typo
