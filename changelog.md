@@ -15,7 +15,7 @@
 * Fix: `.clone()` with `subclassZipFile` option breaks `lazyEntries: false` (closes #1)
 * Remove unnecessary instanceof checks in patchers
 
-## Next
+## 1.0.3
 
 * `.clone()` with `subclassZipFile` option forward all events to subclass instance
 * Fix: Changelog
