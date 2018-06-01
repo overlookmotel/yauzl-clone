@@ -22,7 +22,7 @@
 * Fix: README typo
 * README formatting
 
-## Next
+## 1.0.4
 
 * Run Travis CI tests on Node v10
 * Update dev dependencies
