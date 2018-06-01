@@ -21,3 +21,7 @@
 * Fix: Changelog
 * Fix: README typo
 * README formatting
+
+## Next
+
+* Run Travis CI tests on Node v10
