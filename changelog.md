@@ -25,3 +25,4 @@
 ## Next
 
 * Run Travis CI tests on Node v10
+* Update dev dependencies
