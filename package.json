@@ -3,6 +3,9 @@
   "version": "1.0.4",
   "description": "Clone yauzl for patching",
   "main": "index.js",
+  "files": [
+    "lib/**/*.js"
+  ],
   "author": {
     "name": "Overlook Motel"
   },
