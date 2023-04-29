@@ -17,14 +17,14 @@
     "events-intercept": "^2.0.0"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "coveralls": "^3.0.1",
-    "cross-env": "^5.1.6",
-    "fd-slicer": "^1.0.1",
+    "chai": "^4.3.7",
+    "coveralls": "^3.1.1",
+    "cross-env": "^7.0.3",
+    "fd-slicer": "^1.1.0",
     "istanbul": "^0.4.5",
-    "jshint": "^2.9.5",
-    "mocha": "^5.2.0",
-    "yauzl": "^2.9.1"
+    "jshint": "^2.13.6",
+    "mocha": "^10.2.0",
+    "yauzl": "^2.10.0"
   },
   "keywords": [
     "yauzl",
