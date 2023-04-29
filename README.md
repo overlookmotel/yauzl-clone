@@ -1,16 +1,12 @@
-# yauzl-clone.js
-
-# Clone yauzl for patching
-
-## Current status
-
 [![NPM version](https://img.shields.io/npm/v/yauzl-clone.svg)](https://www.npmjs.com/package/yauzl-clone)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/overlookmotel/yauzl-clone/test.yml?branch=master)](https://github.com/overlookmotel/yauzl-clone/actions)
 [![Coverage Status](https://img.shields.io/coveralls/overlookmotel/yauzl-clone/master.svg)](https://coveralls.io/r/overlookmotel/yauzl-clone)
 
+# Clone `yauzl` for patching
+
 ## Purpose
 
-This module does not have any useful function in itself. It is purely designed to help with creating modules that modify [yauzl](https://www.npmjs.com/package/yauzl) unzipping library in some way.
+This module contains tools to help with creating modules that modify [yauzl](https://www.npmjs.com/package/yauzl) unzipping library in some way.
 
 [yauzl-promise](https://www.npmjs.com/package/yauzl-promise) and [yauzl-crc](https://www.npmjs.com/package/yauzl-crc), for example, use this module internally.
 
@@ -33,7 +29,7 @@ Options are as follows (defaults shown):
 }
 ```
 
-#### clone
+#### `clone`
 
 Clones the yauzl object. Equivalent to `Object.assign({}, yauzl)`.
 
@@ -44,19 +40,19 @@ const yauzlClone = require('yauzlClone');
 const clone = yauzlClone(yauzl);
 ```
 
-#### subclassZipFile
+#### `subclassZipFile`
 
 Creates a subclass of `yauzl.ZipFile`. The prototype of `yauzl.ZipFile` can then be altered without affecting the original.
 
-This option also monkey patches the access methods (`.open()`, `.fromFd()`, `.fromBuffer()`, `.testFromRandomAccessReader()`) to callback with instances of this `ZipFile` subclass.
+This option also monkey-patches the access methods (`.open()`, `.fromFd()`, `.fromBuffer()`, `.testFromRandomAccessReader()`) to callback with instances of this `ZipFile` subclass.
 
-#### subclassEntry
+#### `subclassEntry`
 
 Creates a subclass of `yauzl.Entry` (same idea as `subclassZipFile`).
 
 This option also monkey-patches the access methods in order to intercept emitted 'entry' events and modify the emitted values to instances of the `Entry` subclass. [events-intercept](https://www.npmjs.com/package/events-intercept) module is used internally for event interception.
 
-#### eventsIntercept
+#### `eventsIntercept`
 
 Adds [events-intercept](https://www.npmjs.com/package/events-intercept) methods to `ZipFile` prototype. This option is automatically set to `true` if `subclassEntry` option is `true`.
 
@@ -93,8 +89,8 @@ To allow patching all methods simply using the same wrapper function, the patche
 
 ```js
 yauzlClone.patch( yauzl, 'open', function(original) {
-  return function(path, unused, options, callback) {
-    // NB Notice `unused` argument above
+  return function(path, _unused, options, callback) {
+    // NB Notice `_unused` argument above
     original(reader, null, options, function(err, zipFile) {
       if (err) return callback(err);
       // Do something to zipFile
@@ -141,6 +137,6 @@ If you discover a bug, please raise an issue on Github. https://github.com/overl
 Pull requests are very welcome. Please:
 
 * ensure all tests pass before submitting PR
-* add an entry to changelog
 * add tests for new features
 * document new functionality/API additions in README
+* do not add an entry to Changelog (Changelog is created when cutting releases)
