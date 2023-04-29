@@ -5,7 +5,7 @@
 ## Current status
 
 [![NPM version](https://img.shields.io/npm/v/yauzl-clone.svg)](https://www.npmjs.com/package/yauzl-clone)
-[![Build Status](https://img.shields.io/travis/overlookmotel/yauzl-clone/master.svg)](http://travis-ci.org/overlookmotel/yauzl-clone)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/overlookmotel/yauzl-clone/test.yml?branch=master)](https://github.com/overlookmotel/yauzl-clone/actions)
 [![Dependency Status](https://img.shields.io/david/overlookmotel/yauzl-clone.svg)](https://david-dm.org/overlookmotel/yauzl-clone)
 [![Dev dependency Status](https://img.shields.io/david/dev/overlookmotel/yauzl-clone.svg)](https://david-dm.org/overlookmotel/yauzl-clone)
 [![Greenkeeper badge](https://badges.greenkeeper.io/overlookmotel/yauzl-clone.svg)](https://greenkeeper.io/)
