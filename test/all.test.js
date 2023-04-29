@@ -3,26 +3,22 @@
  * Tests
  * ------------------*/
 
-/* eslint-disable no-invalid-this */
+/* eslint-disable jest/no-done-callback */
+/* eslint jest/expect-expect: ["error", {"assertFunctionNames": [
+	"expect", "testOpen", "testFromFd", "testFromBuffer", "testFromRandomAccessReader"
+]}] */
 
 'use strict';
 
 // Modules
-const chai = require('chai'),
-	{expect} = chai,
-	pathJoin = require('path').join,
+const pathJoin = require('path').join,
 	EventEmitter = require('events'),
 	fs = require('fs'),
 	fdSlicer = require('fd-slicer'),
 	yauzlOriginal = require('yauzl'),
-	cloner = require('../index.js');
-
-// Init
-chai.config.includeStack = true;
+	cloner = require('yauzl-clone');
 
 // Tests
-
-/* global describe, it, beforeEach */
 
 const PATH = pathJoin(__dirname, 'test.zip'),
 	ENTRY_COUNT = 4,
@@ -32,14 +28,14 @@ describe('.clone()', () => {
 	describe('with default options', () => {
 		it('clones yauzl object', () => {
 			const yauzl = cloner.clone(yauzlOriginal);
-			expect(yauzl).to.not.equal(yauzlOriginal);
+			expect(yauzl).not.toBe(yauzlOriginal);
 		});
 
 		it('copies yauzl properties', () => {
 			const yauzl = cloner.clone(yauzlOriginal);
 
 			for (const key in yauzlOriginal) {
-				expect(yauzl[key]).to.equal(yauzlOriginal[key]);
+				expect(yauzl[key]).toBe(yauzlOriginal[key]);
 			}
 		});
 	});
@@ -47,180 +43,195 @@ describe('.clone()', () => {
 	describe('with options.clone = false', () => {
 		it('clones yauzl object', () => {
 			const yauzl = cloner.clone(yauzlOriginal, {clone: false});
-			expect(yauzl).to.equal(yauzlOriginal);
+			expect(yauzl).toBe(yauzlOriginal);
 		});
 	});
 
 	describe('with options.subclassZipFile = true', () => {
-		beforeEach(function() {
-			this.yauzl = cloner.clone(yauzlOriginal, {subclassZipFile: true});
+		let yauzl;
+		beforeEach(() => {
+			yauzl = cloner.clone(yauzlOriginal, {subclassZipFile: true});
 		});
 
-		it('subclasses ZipFile', function() {
-			const {ZipFile} = this.yauzl;
-			expect(ZipFile).to.not.equal(yauzlOriginal.ZipFile);
+		it('subclasses ZipFile', () => {
+			const {ZipFile} = yauzl;
+			expect(ZipFile).not.toBe(yauzlOriginal.ZipFile);
 
 			const zipFile = Object.create(ZipFile.prototype);
-			expect(zipFile).to.be.instanceof(ZipFile);
-			expect(zipFile).to.be.instanceof(yauzlOriginal.ZipFile);
-			expect(zipFile).to.be.instanceof(EventEmitter);
+			expect(zipFile).toBeInstanceOf(ZipFile);
+			expect(zipFile).toBeInstanceOf(yauzlOriginal.ZipFile);
+			expect(zipFile).toBeInstanceOf(EventEmitter);
 		});
 
 		describe('methods callback with instance of ZipFile subclass', () => {
-			beforeEach(function() {
-				const {ZipFile} = this.yauzl;
-				this.testFn = (zipFile, cb) => {
-					expect(zipFile).to.be.instanceof(ZipFile);
+			let testFn;
+			beforeEach(() => {
+				const {ZipFile} = yauzl;
+				testFn = (zipFile, cb) => {
+					expect(zipFile).toBeInstanceOf(ZipFile);
 					cb();
 				};
 			});
 
-			it('`.open()`', function(cb) {
-				testOpen(this.yauzl, cb, this.testFn);
+			it('`.open()`', (cb) => {
+				testOpen(yauzl, cb, testFn);
 			});
 
-			it('`.fromFd()`', function(cb) {
-				testFromFd(this.yauzl, cb, this.testFn);
+			it('`.fromFd()`', (cb) => {
+				testFromFd(yauzl, cb, testFn);
 			});
 
-			it('`.fromBuffer()`', function(cb) {
-				testFromBuffer(this.yauzl, cb, this.testFn);
+			it('`.fromBuffer()`', (cb) => {
+				testFromBuffer(yauzl, cb, testFn);
 			});
 
-			it('`.fromRandomAccessReader()`', function(cb) {
-				testFromRandomAccessReader(this.yauzl, cb, this.testFn);
+			it('`.fromRandomAccessReader()`', (cb) => {
+				testFromRandomAccessReader(yauzl, cb, testFn);
 			});
 		});
 
-		describe('ZipFile subclass instance emits entry events with lazyEntries option false', () => {
+		describe('zipFile subclass instance emits entry events with lazyEntries option false', () => {
 			// Tests for issue https://github.com/overlookmotel/yauzl-clone/issues/1
-			beforeEach(function() {
-				this.testFn = (zipFile, cb) => {
+			let testFn;
+			beforeEach(() => {
+				testFn = (zipFile, cb) => {
 					let entries = 0;
 					zipFile.on('entry', () => entries++);
 					zipFile.on('end', () => {
-						expect(entries).to.equal(ENTRY_COUNT);
-						cb();
+						try {
+							expect(entries).toBe(ENTRY_COUNT); // eslint-disable-line jest/no-standalone-expect
+							cb();
+						} catch (err) {
+							cb(err);
+						}
 					});
 				};
 			});
 
-			it('`.open()`', function(cb) {
-				testOpen(this.yauzl, cb, this.testFn, true);
+			it('`.open()`', (cb) => {
+				testOpen(yauzl, cb, testFn, true);
 			});
 
-			it('`.fromFd()`', function(cb) {
-				testFromFd(this.yauzl, cb, this.testFn, true);
+			it('`.fromFd()`', (cb) => {
+				testFromFd(yauzl, cb, testFn, true);
 			});
 
-			it('`.fromBuffer()`', function(cb) {
-				testFromBuffer(this.yauzl, cb, this.testFn, true);
+			it('`.fromBuffer()`', (cb) => {
+				testFromBuffer(yauzl, cb, testFn, true);
 			});
 
-			it('`.fromRandomAccessReader()`', function(cb) {
-				testFromRandomAccessReader(this.yauzl, cb, this.testFn, true);
+			it('`.fromRandomAccessReader()`', (cb) => {
+				testFromRandomAccessReader(yauzl, cb, testFn, true);
 			});
 		});
 	});
 
 	describe('with options.subclassEntry = true', () => {
-		beforeEach(function() {
-			this.yauzl = cloner.clone(yauzlOriginal, {subclassZipFile: true, subclassEntry: true});
+		let yauzl;
+		beforeEach(() => {
+			yauzl = cloner.clone(yauzlOriginal, {subclassZipFile: true, subclassEntry: true});
 		});
 
-		it('subclasses Entry', function() {
-			const {Entry} = this.yauzl;
-			expect(Entry).to.not.equal(yauzlOriginal.Entry);
+		it('subclasses Entry', () => {
+			const {Entry} = yauzl;
+			expect(Entry).not.toBe(yauzlOriginal.Entry);
 
 			const entry = Object.create(Entry.prototype);
-			expect(entry).to.be.instanceof(Entry);
-			expect(entry).to.be.instanceof(yauzlOriginal.Entry);
+			expect(entry).toBeInstanceOf(Entry);
+			expect(entry).toBeInstanceOf(yauzlOriginal.Entry);
 		});
 
 		describe('`.readEntry()` emits \'entry\' event with instance of Entry subclass when called on zip file accessed with', () => {
-			beforeEach(function() {
-				const {Entry} = this.yauzl;
-				this.testFn = (zipFile, cb) => {
+			let testFn;
+			beforeEach(() => {
+				const {Entry} = yauzl;
+				testFn = (zipFile, cb) => {
 					zipFile.on('error', cb);
 					zipFile.on('entry', (entry) => {
-						expect(entry).to.be.instanceof(Entry);
-						cb();
+						try {
+							expect(entry).toBeInstanceOf(Entry);
+							cb();
+						} catch (err) {
+							cb(err);
+						}
 					});
 					zipFile.readEntry();
 				};
 			});
 
-			it('`.open()`', function(cb) {
-				testOpen(this.yauzl, cb, this.testFn);
+			it('`.open()`', (cb) => {
+				testOpen(yauzl, cb, testFn);
 			});
 
-			it('`.fromFd()`', function(cb) {
-				testFromFd(this.yauzl, cb, this.testFn);
+			it('`.fromFd()`', (cb) => {
+				testFromFd(yauzl, cb, testFn);
 			});
 
-			it('`.fromBuffer()`', function(cb) {
-				testFromBuffer(this.yauzl, cb, this.testFn);
+			it('`.fromBuffer()`', (cb) => {
+				testFromBuffer(yauzl, cb, testFn);
 			});
 
-			it('`.fromRandomAccessReader()`', function(cb) {
-				testFromRandomAccessReader(this.yauzl, cb, this.testFn);
+			it('`.fromRandomAccessReader()`', (cb) => {
+				testFromRandomAccessReader(yauzl, cb, testFn);
 			});
 		});
 
 		describe('`.readEntry()` emits \'entry\' event with `this` context of ZipFile subclass when called on zip file accessed with', () => {
-			beforeEach(function() {
-				const {ZipFile} = this.yauzl;
-				this.testFn = (zipFile, cb) => {
+			let testFn;
+			beforeEach(() => {
+				const {ZipFile} = yauzl;
+				testFn = (zipFile, cb) => {
 					zipFile.on('error', cb);
 					zipFile.on('entry', function() {
-						expect(this).to.be.instanceof(ZipFile);
-						cb();
+						try {
+							expect(this).toBeInstanceOf(ZipFile); // eslint-disable-line no-invalid-this
+							cb();
+						} catch (err) {
+							cb(err);
+						}
 					});
 					zipFile.readEntry();
 				};
 			});
 
-			it('`.open()`', function(cb) {
-				testOpen(this.yauzl, cb, this.testFn);
+			it('`.open()`', (cb) => {
+				testOpen(yauzl, cb, testFn);
 			});
 
-			it('`.fromFd()`', function(cb) {
-				testFromFd(this.yauzl, cb, this.testFn);
+			it('`.fromFd()`', (cb) => {
+				testFromFd(yauzl, cb, testFn);
 			});
 
-			it('`.fromBuffer()`', function(cb) {
-				testFromBuffer(this.yauzl, cb, this.testFn);
+			it('`.fromBuffer()`', (cb) => {
+				testFromBuffer(yauzl, cb, testFn);
 			});
 
-			it('`.fromRandomAccessReader()`', function(cb) {
-				testFromRandomAccessReader(this.yauzl, cb, this.testFn);
+			it('`.fromRandomAccessReader()`', (cb) => {
+				testFromRandomAccessReader(yauzl, cb, testFn);
 			});
 		});
 	});
 
 	describe('with options.eventsIntercept = true', () => {
-		beforeEach(function() {
-			this.yauzl = cloner.clone(yauzlOriginal, {subclassZipFile: true, eventsIntercept: true});
-		});
-
-		it('adds events-intercept intercept method to ZipFile prototype', function() {
-			const {ZipFile} = this.yauzl;
+		it('adds events-intercept intercept method to ZipFile prototype', () => {
+			const {ZipFile} = cloner.clone(yauzlOriginal, {subclassZipFile: true, eventsIntercept: true});
 
 			const zipFile = Object.create(ZipFile.prototype);
-			expect(zipFile.intercept).to.be.a('function');
+			expect(zipFile.intercept).toBeFunction();
 
 			const zipFileOriginal = Object.create(yauzlOriginal.ZipFile.prototype);
-			expect(zipFileOriginal.intercept).to.be.undefined; // eslint-disable-line no-unused-expressions
+			expect(zipFileOriginal.intercept).toBeUndefined();
 		});
 	});
 });
 
 describe('.patch()', () => {
-	beforeEach(function() {
-		this.yauzl = cloner.clone(yauzlOriginal);
+	let yauzl, patcher, testFn, expectedArg1Type, expectedArg2;
+	beforeEach(() => {
+		yauzl = cloner.clone(yauzlOriginal);
 
 		let calledWith = null;
-		this.patcher = original => (arg1, arg2, options, callback) => {
+		patcher = original => (arg1, arg2, options, callback) => {
 			calledWith = {
 				arg1,
 				arg2,
@@ -238,59 +249,60 @@ describe('.patch()', () => {
 			});
 		};
 
-		this.testFn = (zipFile, cb) => {
-			expect(calledWith).to.be.ok; // eslint-disable-line no-unused-expressions
-			if (this.expectedArg1Type === 'buffer') {
-				expect(calledWith.arg1).to.be.instanceof(Buffer);
+		testFn = (zipFile, cb) => {
+			expect(calledWith).toBeObject();
+			if (expectedArg1Type === 'buffer') {
+				expect(calledWith.arg1).toBeInstanceOf(Buffer);
 			} else {
-				expect(calledWith.arg1).to.be.a(this.expectedArg1Type);
+				expect(typeof calledWith.arg1).toBe(expectedArg1Type);
 			}
-			expect(calledWith.arg2).to.equal(this.expectedArg2);
-			expect(calledWith.options).to.deep.equal({lazyEntries: true});
-			expect(zipFile._mutated).to.be.true; // eslint-disable-line no-unused-expressions
+			expect(calledWith.arg2).toBe(expectedArg2);
+			expect(calledWith.options).toEqual({lazyEntries: true});
+			expect(zipFile._mutated).toBeTrue();
 			cb();
 		};
 	});
 
-	it('works with `.open()`', function(cb) {
-		cloner.patch(this.yauzl, 'open', this.patcher);
+	it('works with `.open()`', (cb) => {
+		cloner.patch(yauzl, 'open', patcher);
 
-		this.expectedArg1Type = 'string';
-		this.expectedArg2 = null;
-		testOpen(this.yauzl, cb, this.testFn);
+		expectedArg1Type = 'string';
+		expectedArg2 = null;
+		testOpen(yauzl, cb, testFn);
 	});
 
-	it('works with `.fromFd()`', function(cb) {
-		cloner.patch(this.yauzl, 'fromFd', this.patcher);
+	it('works with `.fromFd()`', (cb) => {
+		cloner.patch(yauzl, 'fromFd', patcher);
 
-		this.expectedArg1Type = 'number';
-		this.expectedArg2 = null;
-		testFromFd(this.yauzl, cb, this.testFn);
+		expectedArg1Type = 'number';
+		expectedArg2 = null;
+		testFromFd(yauzl, cb, testFn);
 	});
 
-	it('works with `.fromBuffer()`', function(cb) {
-		cloner.patch(this.yauzl, 'fromBuffer', this.patcher);
+	it('works with `.fromBuffer()`', (cb) => {
+		cloner.patch(yauzl, 'fromBuffer', patcher);
 
-		this.expectedArg1Type = 'buffer';
-		this.expectedArg2 = null;
-		testFromBuffer(this.yauzl, cb, this.testFn);
+		expectedArg1Type = 'buffer';
+		expectedArg2 = null;
+		testFromBuffer(yauzl, cb, testFn);
 	});
 
-	it('works with `.fromRandomAccessReader()`', function(cb) {
-		cloner.patch(this.yauzl, 'fromRandomAccessReader', this.patcher);
+	it('works with `.fromRandomAccessReader()`', (cb) => {
+		cloner.patch(yauzl, 'fromRandomAccessReader', patcher);
 
-		this.expectedArg1Type = 'object';
-		this.expectedArg2 = FILE_LENGTH;
-		testFromRandomAccessReader(this.yauzl, cb, this.testFn);
+		expectedArg1Type = 'object';
+		expectedArg2 = FILE_LENGTH;
+		testFromRandomAccessReader(yauzl, cb, testFn);
 	});
 });
 
 describe('.patchAll()', () => {
-	beforeEach(function() {
-		this.yauzl = cloner.clone(yauzlOriginal);
+	let yauzl, patcher, testFn, expectedArg1Type, expectedArg2;
+	beforeEach(() => {
+		yauzl = cloner.clone(yauzlOriginal);
 
 		let calledWith = null;
-		this.patcher = original => (arg1, arg2, options, callback) => {
+		patcher = original => (arg1, arg2, options, callback) => {
 			calledWith = {
 				arg1,
 				arg2,
@@ -308,44 +320,44 @@ describe('.patchAll()', () => {
 			});
 		};
 
-		this.testFn = (zipFile, cb) => {
-			expect(calledWith).to.be.ok; // eslint-disable-line no-unused-expressions
-			if (this.expectedArg1Type === 'buffer') {
-				expect(calledWith.arg1).to.be.instanceof(Buffer);
+		testFn = (zipFile, cb) => {
+			expect(calledWith).toBeObject();
+			if (expectedArg1Type === 'buffer') {
+				expect(calledWith.arg1).toBeInstanceOf(Buffer);
 			} else {
-				expect(calledWith.arg1).to.be.a(this.expectedArg1Type);
+				expect(typeof calledWith.arg1).toBe(expectedArg1Type);
 			}
-			expect(calledWith.arg2).to.equal(this.expectedArg2);
-			expect(calledWith.options).to.deep.equal({lazyEntries: true});
-			expect(zipFile._mutated).to.be.true; // eslint-disable-line no-unused-expressions
+			expect(calledWith.arg2).toBe(expectedArg2);
+			expect(calledWith.options).toEqual({lazyEntries: true});
+			expect(zipFile._mutated).toBeTrue();
 			cb();
 		};
 
-		cloner.patchAll(this.yauzl, this.patcher);
+		cloner.patchAll(yauzl, patcher);
 	});
 
-	it('works with `.open()`', function(cb) {
-		this.expectedArg1Type = 'string';
-		this.expectedArg2 = null;
-		testOpen(this.yauzl, cb, this.testFn);
+	it('works with `.open()`', (cb) => {
+		expectedArg1Type = 'string';
+		expectedArg2 = null;
+		testOpen(yauzl, cb, testFn);
 	});
 
-	it('works with `.fromFd()`', function(cb) {
-		this.expectedArg1Type = 'number';
-		this.expectedArg2 = null;
-		testFromFd(this.yauzl, cb, this.testFn);
+	it('works with `.fromFd()`', (cb) => {
+		expectedArg1Type = 'number';
+		expectedArg2 = null;
+		testFromFd(yauzl, cb, testFn);
 	});
 
-	it('works with `.fromBuffer()`', function(cb) {
-		this.expectedArg1Type = 'buffer';
-		this.expectedArg2 = null;
-		testFromBuffer(this.yauzl, cb, this.testFn);
+	it('works with `.fromBuffer()`', (cb) => {
+		expectedArg1Type = 'buffer';
+		expectedArg2 = null;
+		testFromBuffer(yauzl, cb, testFn);
 	});
 
-	it('works with `.fromRandomAccessReader()`', function(cb) {
-		this.expectedArg1Type = 'object';
-		this.expectedArg2 = FILE_LENGTH;
-		testFromRandomAccessReader(this.yauzl, cb, this.testFn);
+	it('works with `.fromRandomAccessReader()`', (cb) => {
+		expectedArg1Type = 'object';
+		expectedArg2 = FILE_LENGTH;
+		testFromRandomAccessReader(yauzl, cb, testFn);
 	});
 });
 
@@ -441,7 +453,7 @@ function testFromRandomAccessReader(yauzl, cb, fn, noLazyEntries) {
 function errorToCb(fn) {
 	return function(...args) {
 		try {
-			return fn.apply(this, args);
+			return fn.apply(this, args); // eslint-disable-line no-invalid-this
 		} catch (err) {
 			args[args.length - 1](err);
 			return undefined;
