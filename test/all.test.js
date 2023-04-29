@@ -13,7 +13,7 @@ const chai = require('chai'),
 	fs = require('fs'),
 	fdSlicer = require('fd-slicer'),
 	yauzlOriginal = require('yauzl'),
-	cloner = require('../lib/');
+	cloner = require('../index.js');
 
 // Init
 chai.config.includeStack = true;

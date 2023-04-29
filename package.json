@@ -2,7 +2,7 @@
   "name": "yauzl-clone",
   "version": "1.0.4",
   "description": "Clone yauzl for patching",
-  "main": "./lib/",
+  "main": "index.js",
   "author": {
     "name": "Overlook Motel"
   },
