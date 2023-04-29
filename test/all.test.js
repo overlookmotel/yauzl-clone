@@ -3,6 +3,8 @@
  * Tests
  * ------------------*/
 
+/* eslint-disable no-invalid-this */
+
 'use strict';
 
 // Modules
@@ -20,37 +22,36 @@ chai.config.includeStack = true;
 
 // Tests
 
-/* jshint expr: true */
 /* global describe, it, beforeEach */
 
 const PATH = pathJoin(__dirname, 'test.zip'),
 	ENTRY_COUNT = 4,
 	FILE_LENGTH = 648;
 
-describe('.clone()', function() {
-	describe('with default options', function() {
-		it('clones yauzl object', function() {
+describe('.clone()', () => {
+	describe('with default options', () => {
+		it('clones yauzl object', () => {
 			const yauzl = cloner.clone(yauzlOriginal);
 			expect(yauzl).to.not.equal(yauzlOriginal);
 		});
 
-		it('copies yauzl properties', function() {
+		it('copies yauzl properties', () => {
 			const yauzl = cloner.clone(yauzlOriginal);
 
-			for (let key in yauzlOriginal) {
+			for (const key in yauzlOriginal) {
 				expect(yauzl[key]).to.equal(yauzlOriginal[key]);
 			}
 		});
 	});
 
-	describe('with options.clone = false', function() {
-		it('clones yauzl object', function() {
+	describe('with options.clone = false', () => {
+		it('clones yauzl object', () => {
 			const yauzl = cloner.clone(yauzlOriginal, {clone: false});
 			expect(yauzl).to.equal(yauzlOriginal);
 		});
 	});
 
-	describe('with options.subclassZipFile = true', function() {
+	describe('with options.subclassZipFile = true', () => {
 		beforeEach(function() {
 			this.yauzl = cloner.clone(yauzlOriginal, {subclassZipFile: true});
 		});
@@ -65,7 +66,7 @@ describe('.clone()', function() {
 			expect(zipFile).to.be.instanceof(EventEmitter);
 		});
 
-		describe('methods callback with instance of ZipFile subclass', function() {
+		describe('methods callback with instance of ZipFile subclass', () => {
 			beforeEach(function() {
 				const {ZipFile} = this.yauzl;
 				this.testFn = (zipFile, cb) => {
@@ -91,7 +92,7 @@ describe('.clone()', function() {
 			});
 		});
 
-		describe('ZipFile subclass instance emits entry events with lazyEntries option false', function() {
+		describe('ZipFile subclass instance emits entry events with lazyEntries option false', () => {
 			// Tests for issue https://github.com/overlookmotel/yauzl-clone/issues/1
 			beforeEach(function() {
 				this.testFn = (zipFile, cb) => {
@@ -122,7 +123,7 @@ describe('.clone()', function() {
 		});
 	});
 
-	describe('with options.subclassEntry = true', function() {
+	describe('with options.subclassEntry = true', () => {
 		beforeEach(function() {
 			this.yauzl = cloner.clone(yauzlOriginal, {subclassZipFile: true, subclassEntry: true});
 		});
@@ -136,12 +137,12 @@ describe('.clone()', function() {
 			expect(entry).to.be.instanceof(yauzlOriginal.Entry);
 		});
 
-		describe('`.readEntry()` emits \'entry\' event with instance of Entry subclass when called on zip file accessed with', function() {
+		describe('`.readEntry()` emits \'entry\' event with instance of Entry subclass when called on zip file accessed with', () => {
 			beforeEach(function() {
 				const {Entry} = this.yauzl;
 				this.testFn = (zipFile, cb) => {
 					zipFile.on('error', cb);
-					zipFile.on('entry', entry => {
+					zipFile.on('entry', (entry) => {
 						expect(entry).to.be.instanceof(Entry);
 						cb();
 					});
@@ -166,7 +167,7 @@ describe('.clone()', function() {
 			});
 		});
 
-		describe('`.readEntry()` emits \'entry\' event with `this` context of ZipFile subclass when called on zip file accessed with', function() {
+		describe('`.readEntry()` emits \'entry\' event with `this` context of ZipFile subclass when called on zip file accessed with', () => {
 			beforeEach(function() {
 				const {ZipFile} = this.yauzl;
 				this.testFn = (zipFile, cb) => {
@@ -197,7 +198,7 @@ describe('.clone()', function() {
 		});
 	});
 
-	describe('with options.eventsIntercept = true', function() {
+	describe('with options.eventsIntercept = true', () => {
 		beforeEach(function() {
 			this.yauzl = cloner.clone(yauzlOriginal, {subclassZipFile: true, eventsIntercept: true});
 		});
@@ -209,43 +210,44 @@ describe('.clone()', function() {
 			expect(zipFile.intercept).to.be.a('function');
 
 			const zipFileOriginal = Object.create(yauzlOriginal.ZipFile.prototype);
-			expect(zipFileOriginal.intercept).to.be.undefined;
+			expect(zipFileOriginal.intercept).to.be.undefined; // eslint-disable-line no-unused-expressions
 		});
 	});
 });
 
-describe('.patch()', function() {
+describe('.patch()', () => {
 	beforeEach(function() {
 		this.yauzl = cloner.clone(yauzlOriginal);
 
 		let calledWith = null;
-		this.patcher = original => {
-			return (arg1, arg2, options, callback) => {
-				calledWith = {
-					arg1,
-					arg2,
-					options: options ? Object.assign({}, options) : options,
-					callback
-				};
-
-				original(arg1, arg2, options, (err, zipFile) => {
-					if (err) return callback(err);
-					zipFile._mutated = true;
-					callback(null, zipFile);
-				});
+		this.patcher = original => (arg1, arg2, options, callback) => {
+			calledWith = {
+				arg1,
+				arg2,
+				options: options ? ({...options}) : options,
+				callback
 			};
+
+			original(arg1, arg2, options, (err, zipFile) => {
+				if (err) {
+					callback(err);
+					return;
+				}
+				zipFile._mutated = true;
+				callback(null, zipFile);
+			});
 		};
 
 		this.testFn = (zipFile, cb) => {
-			expect(calledWith).to.be.ok;
-			if (this.expectedArg1Type == 'buffer') {
+			expect(calledWith).to.be.ok; // eslint-disable-line no-unused-expressions
+			if (this.expectedArg1Type === 'buffer') {
 				expect(calledWith.arg1).to.be.instanceof(Buffer);
 			} else {
 				expect(calledWith.arg1).to.be.a(this.expectedArg1Type);
 			}
 			expect(calledWith.arg2).to.equal(this.expectedArg2);
 			expect(calledWith.options).to.deep.equal({lazyEntries: true});
-			expect(zipFile._mutated).to.be.true;
+			expect(zipFile._mutated).to.be.true; // eslint-disable-line no-unused-expressions
 			cb();
 		};
 	});
@@ -283,38 +285,39 @@ describe('.patch()', function() {
 	});
 });
 
-describe('.patchAll()', function() {
+describe('.patchAll()', () => {
 	beforeEach(function() {
 		this.yauzl = cloner.clone(yauzlOriginal);
 
 		let calledWith = null;
-		this.patcher = original => {
-			return (arg1, arg2, options, callback) => {
-				calledWith = {
-					arg1,
-					arg2,
-					options: options ? Object.assign({}, options) : options,
-					callback
-				};
-
-				original(arg1, arg2, options, (err, zipFile) => {
-					if (err) return callback(err);
-					zipFile._mutated = true;
-					callback(null, zipFile);
-				});
+		this.patcher = original => (arg1, arg2, options, callback) => {
+			calledWith = {
+				arg1,
+				arg2,
+				options: options ? ({...options}) : options,
+				callback
 			};
+
+			original(arg1, arg2, options, (err, zipFile) => {
+				if (err) {
+					callback(err);
+					return;
+				}
+				zipFile._mutated = true;
+				callback(null, zipFile);
+			});
 		};
 
 		this.testFn = (zipFile, cb) => {
-			expect(calledWith).to.be.ok;
-			if (this.expectedArg1Type == 'buffer') {
+			expect(calledWith).to.be.ok; // eslint-disable-line no-unused-expressions
+			if (this.expectedArg1Type === 'buffer') {
 				expect(calledWith.arg1).to.be.instanceof(Buffer);
 			} else {
 				expect(calledWith.arg1).to.be.a(this.expectedArg1Type);
 			}
 			expect(calledWith.arg2).to.equal(this.expectedArg2);
 			expect(calledWith.options).to.deep.equal({lazyEntries: true});
-			expect(zipFile._mutated).to.be.true;
+			expect(zipFile._mutated).to.be.true; // eslint-disable-line no-unused-expressions
 			cb();
 		};
 
@@ -351,10 +354,16 @@ describe('.patchAll()', function() {
  */
 function testOpen(yauzl, cb, fn, noLazyEntries) {
 	fn = errorToCb(fn);
-	yauzl.open(PATH, {lazyEntries: !noLazyEntries}, function(err, zipFile) {
-		if (err) return cb(err);
-		fn(zipFile, err => {
-			if (err) return cb(err);
+	yauzl.open(PATH, {lazyEntries: !noLazyEntries}, (err, zipFile) => {
+		if (err) {
+			cb(err);
+			return;
+		}
+		fn(zipFile, (err) => { // eslint-disable-line no-shadow
+			if (err) {
+				cb(err);
+				return;
+			}
 			closeZip(zipFile, cb);
 		});
 	});
@@ -363,12 +372,22 @@ function testOpen(yauzl, cb, fn, noLazyEntries) {
 function testFromFd(yauzl, cb, fn, noLazyEntries) {
 	fn = errorToCb(fn);
 	fs.open(PATH, 'r', (err, fd) => {
-		if (err) return cb(err);
+		if (err) {
+			cb(err);
+			return;
+		}
 
-		yauzl.fromFd(fd, {lazyEntries: !noLazyEntries}, function(err, zipFile) {
-			if (err) return cb(err);
-			fn(zipFile, err => {
-				if (err) return cb(err);
+		yauzl.fromFd(fd, {lazyEntries: !noLazyEntries}, (err, zipFile) => { // eslint-disable-line no-shadow
+			if (err) {
+				cb(err);
+				return;
+			}
+
+			fn(zipFile, (err) => { // eslint-disable-line no-shadow
+				if (err) {
+					cb(err);
+					return;
+				}
 				closeZip(zipFile, cb);
 			});
 		});
@@ -378,35 +397,54 @@ function testFromFd(yauzl, cb, fn, noLazyEntries) {
 function testFromBuffer(yauzl, cb, fn, noLazyEntries) {
 	fn = errorToCb(fn);
 	fs.readFile(PATH, (err, buffer) => {
-		if (err) return cb(err);
+		if (err) {
+			cb(err);
+			return;
+		}
 
-		yauzl.fromBuffer(buffer, {lazyEntries: !noLazyEntries}, function(err, zipFile) {
-			if (err) return cb(err);
-			fn(zipFile, cb);
-		});
+		yauzl.fromBuffer(
+			buffer, {lazyEntries: !noLazyEntries},
+			(err, zipFile) => { // eslint-disable-line no-shadow
+				if (err) {
+					cb(err);
+					return;
+				}
+				fn(zipFile, cb);
+			}
+		);
 	});
 }
 
 function testFromRandomAccessReader(yauzl, cb, fn, noLazyEntries) {
 	fn = errorToCb(fn);
 	fs.readFile(PATH, (err, buffer) => {
-		if (err) return cb(err);
+		if (err) {
+			cb(err);
+			return;
+		}
 
 		const reader = fdSlicer.createFromBuffer(buffer);
 
-		yauzl.fromRandomAccessReader(reader, buffer.length, {lazyEntries: !noLazyEntries}, function(err, zipFile) {
-			if (err) return cb(err);
-			fn(zipFile, cb);
-		});
+		yauzl.fromRandomAccessReader(
+			reader, buffer.length, {lazyEntries: !noLazyEntries},
+			(err, zipFile) => { // eslint-disable-line no-shadow
+				if (err) {
+					cb(err);
+					return;
+				}
+				fn(zipFile, cb);
+			}
+		);
 	});
 }
 
 function errorToCb(fn) {
-	return function() {
+	return function(...args) {
 		try {
-			return fn.apply(this, arguments);
+			return fn.apply(this, args);
 		} catch (err) {
-			arguments[arguments.length - 1](err);
+			args[args.length - 1](err);
+			return undefined;
 		}
 	};
 }

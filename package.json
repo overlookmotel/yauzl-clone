@@ -20,12 +20,14 @@
     "events-intercept": "^2.0.0"
   },
   "devDependencies": {
+    "@overlookmotel/eslint-config": "^10.1.0",
+    "@overlookmotel/eslint-config-node": "^4.1.0",
     "chai": "^4.3.7",
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
+    "eslint": "^8.39.0",
     "fd-slicer": "^1.1.0",
     "istanbul": "^0.4.5",
-    "jshint": "^2.13.6",
     "mocha": "^10.2.0",
     "yauzl": "^2.10.0"
   },
@@ -36,8 +38,8 @@
     "plugin"
   ],
   "scripts": {
-    "test": "npm run jshint && npm run test-main",
-    "jshint": "jshint lib test",
+    "test": "npm run lint && npm run test-main",
+    "lint": "eslint .",
     "test-main": "mocha --check-leaks --colors -t 10000 -R spec \"test/**/*.test.js\"",
     "cover": "npm run cover-main && rm -rf coverage",
     "coveralls": "npm run cover-main && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
